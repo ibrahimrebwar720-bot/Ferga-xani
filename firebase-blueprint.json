@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and progress data",
+      "type": "object",
+      "properties": {
+        "xp": {
+          "type": "integer",
+          "description": "Experience points"
+        },
+        "learnedLessons": {
+          "type": "array",
+          "description": "List of completed lesson IDs"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "streak": {
+          "type": "integer",
+          "description": "Consecutive days of learning"
+        },
+        "lastActivity": {
+          "type": "string",
+          "format": "date",
+          "description": "Last date of activity in YYYY-MM-DD format"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "URL to user's profile picture"
+        },
+        "bannerUrl": {
+          "type": "string",
+          "description": "URL to user's profile banner image"
+        },
+        "bio": {
+          "type": "string",
+          "description": "A short biography of the user"
+        },
+        "dailyGoal": {
+          "type": "integer",
+          "description": "Daily XP or lesson goal"
+        },
+        "lessonsToday": {
+          "type": "integer",
+          "description": "Number of lessons completed today"
+        },
+        "achievements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "IDs of earned badges"
+        }
+      },
+      "required": ["xp", "learnedLessons", "email", "streak"]
+    },
+    "Flashcard": {
+      "title": "Flashcard",
+      "description": "A single word flashcard for spaced repetition",
+      "type": "object",
+      "properties": {
+        "front": { "type": "string" },
+        "back": { "type": "string" },
+        "category": { "type": "string" },
+        "streak": { "type": "integer" },
+        "lastReview": { "type": "integer" },
+        "nextReview": { "type": "integer" }
+      },
+      "required": ["front", "back", "streak"]
+    },
+    "AppConfig": {
+      "title": "AppConfig",
+      "description": "Global application configuration and content",
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "description": "Dynamic UI labels and translations"
+        },
+        "tabs": {
+          "type": "array",
+          "description": "Dynamic app tabs/sections"
+        },
+        "announcement": {
+          "type": "string",
+          "description": "Global announcement message"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/app/global": {
+      "schema": "AppConfig",
+      "description": "Global settings for the application"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user progress"
+    },
+    "/users/{userId}/flashcards/{flashcardId}": {
+      "schema": "Flashcard",
+      "description": "User's personal flashcards"
+    }
+  }
+}

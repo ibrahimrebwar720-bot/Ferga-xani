@@ -1,0 +1,2 @@
+                                   <h5 className="font-black text-[10px] uppercase tracking-[0.3em] text-red-500 mb-6">{interfaceLang === 'Sorani' ? 'کردارە ترسناکەکان' : 'Karên Tirsnak'}</h5>y]: newTopics
+                                  <h5 className="font-black text-[10px] uppercase tracking-[0.3em] text-red-500 mb-6">{interfaceLang === 'Sorani' ? 'کردارە ترسناکەکان' : 'Karên Tirsnak'}</h5>

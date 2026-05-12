@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 0.1 Context-Aware Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.email == 'ibrahimrebwar2026@gmail.com' || request.auth.token.email == 'ibrahimrebwr2026@gmail.com') && request.auth.token.email_verified == true;
+    }
+
+    match /app/global {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.xp is int
+          && data.learnedLessons is list
+          && data.email is string
+          && data.email.size() <= 256
+          && (data.get('streak', 0) is int)
+          && (data.get('lastActivity', '') is string)
+          && (data.get('lessonsToday', 0) is int)
+          && (data.get('dailyGoal', 2) is int)
+          && (data.get('displayName', '') is string)
+          && (data.get('photoURL', '') is string)
+          && (data.get('achievements', []) is list)
+          ;
+      }
+
+      // Allow any signed-in user to see names and pictures for the leaderboard
+      // But only allow the owner to see the full document (like email)
+      allow get: if isSignedIn() && isValidId(userId);
+      allow list: if isSignedIn(); 
+
+      allow create: if isOwner(userId) 
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && incoming().email == request.auth.token.email
+        && incoming().xp == 0
+        && incoming().learnedLessons.size() == 0;
+
+      allow update: if (isOwner(userId) || isAdmin())
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && (
+          isAdmin() || (
+            incoming().email == request.auth.token.email && (
+              // Action: Update XP
+              (incoming().diff(existing()).affectedKeys().hasOnly(['xp'])) ||
+              // Action: Complete Lesson & Update Streak/Goal
+              (incoming().diff(existing()).affectedKeys().hasOnly(['learnedLessons', 'streak', 'lastActivity', 'lessonsToday'])) ||
+              // Action: Update Profile Info (name/photo/goal)
+              (incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'dailyGoal']))
+            )
+          )
+        )
+        // Immortal Field Rule
+        && incoming().email == existing().email;
+
+      match /flashcards/{flashcardId} {
+        function isValidFlashcard(data) {
+          return data.front is string && data.front.size() <= 500
+            && data.back is string && data.back.size() <= 500
+            && (data.get('category', '') is string)
+            && data.streak is int
+            && (data.get('lastReview', 0) is int)
+            && (data.get('nextReview', 0) is int);
+        }
+
+        allow read, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(flashcardId) && isValidFlashcard(incoming());
+        allow update: if isOwner(userId) && isValidFlashcard(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "فێرگەی خانی / Fêrga Xanî",
+  "description": "بۆ فێربوونی شێوەزارە کوردییەکان.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": []
+}
